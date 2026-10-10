@@ -1,19 +1,17 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 
-from app.api import health
-from app.config import get_settings
+# Copy .env into os.environ, where the OpenAI SDK and LangSmith look for their keys.
+# Runs before the other imports, because app.itinerary creates the model on import.
+load_dotenv()
 
-settings = get_settings()
+from fastapi import FastAPI  # noqa: E402
 
-app = FastAPI(title=settings.app_name)
+from app import itinerary  # noqa: E402
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app = FastAPI(title="Tripora Agent")
+app.include_router(itinerary.router)
 
-app.include_router(health.router)
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
