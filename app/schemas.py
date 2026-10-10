@@ -35,3 +35,7 @@ class Itinerary(BaseModel):
     summary: str
     days: list[DayPlan] = Field(description="Exactly one entry per trip day")
     tips: list[str]
+
+
+class ChatRequest(BaseModel):
+    message: str

@@ -17,3 +17,4 @@ API docs: http://localhost:8001/docs
 |---|---|
 | `GET /health` | Liveness check |
 | `POST /itinerary` | Day-by-day itinerary from trip details (M1) |
+| `POST /chat` | Travel assistant agent with weather, geocoding and currency tools (M2) |
