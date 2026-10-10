@@ -39,3 +39,5 @@ class Itinerary(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str
+    # Messages with the same thread_id share one conversation (M3 memory).
+    thread_id: str = "default"

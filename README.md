@@ -17,4 +17,5 @@ API docs: http://localhost:8001/docs
 |---|---|
 | `GET /health` | Liveness check |
 | `POST /itinerary` | Day-by-day itinerary from trip details (M1) |
-| `POST /chat` | Travel assistant agent with weather, geocoding and currency tools (M2) |
+| `POST /chat` | Travel assistant agent with tools (M2) and per-`thread_id` memory (M3) |
+| `POST /chat/stream` | Same agent, streamed as server-sent events: tool calls, tool results, tokens (M3) |
