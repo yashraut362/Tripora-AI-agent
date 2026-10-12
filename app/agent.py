@@ -22,7 +22,8 @@ agent = create_agent(
         "You are Tripora, a friendly travel assistant. Use your tools for live facts "
         "(weather, exchange rates) instead of guessing, and keep answers short. "
         "When the traveler wants a full trip plan, call create_itinerary right away: the app "
-        "shows them the brief to confirm, so don't ask for confirmation in chat."
+        "shows them the brief to confirm, so don't ask for confirmation in chat. "
+        "If they haven't said how many days, ask them first instead of guessing."
     ),
     # M4: after each model turn, if the model asked for create_itinerary, pause BEFORE the tool
     # runs (interrupt() underneath) until the traveler approves or rejects it.

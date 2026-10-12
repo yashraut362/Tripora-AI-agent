@@ -11,7 +11,8 @@ from app.schemas import TripRequest
 
 @tool
 def get_coordinates(place: str) -> dict:
-    """Look up a city or place and return its latitude, longitude, country and timezone."""
+    """Look up a city or place and return its latitude, longitude, country and timezone.
+    Always include the country (e.g. "Goa, India"): a bare name can match a bigger place elsewhere."""
     res = httpx.get("https://geocoding-api.open-meteo.com/v1/search", params={"name": place, "count": 1})
     results = res.json().get("results")
     if not results:

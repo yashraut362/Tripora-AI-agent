@@ -10,7 +10,7 @@ one concept at a time. Each milestone has a study note in [`docs/learn/`](learn/
 | 2 | Agent with tools: weather, geocoding, currency | `@tool`, `create_agent`, the agent loop | A second router | ✅ [notes](learn/m2-agent-with-tools.md) |
 | 3 | Chat that remembers and streams | Checkpointers, thread IDs, streaming | Server-sent events (`EventSourceResponse`) | ✅ [notes](learn/m3-memory-and-streaming.md) |
 | 4 | Approve the trip brief: the agent pauses with what it understood, and builds the real itinerary only after you approve | Human in the loop: `HumanInTheLoopMiddleware` (uses `interrupt()`), resuming with `Command(resume=...)`; M1's chain becomes an agent tool | The same chat endpoints take a message or an approve decision | ✅ [notes](learn/m4-human-approval.md) |
-| 5 | Is the agent any good? | LangSmith Evaluation: datasets, evaluators, experiments | | |
+| 5 | Is the agent any good? | LangSmith Evaluation: datasets, evaluators, experiments | | ✅ [notes](learn/m5-evaluation.md) |
 | 6 | Deep trip planner with subagents | Deep Agents | | |
 | 7 | Agent runs code (budget math, charts) | LangSmith Sandboxes | | |
 | 8 | Ship it | LangSmith Deployment vs serving it yourself with FastAPI | Deployment trade-offs | |

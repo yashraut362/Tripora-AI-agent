@@ -19,3 +19,11 @@ API docs: http://localhost:8001/docs
 | `POST /itinerary` | Day-by-day itinerary from trip details (M1) |
 | `POST /chat` | Travel assistant agent with tools (M2), per-`thread_id` memory (M3), trip-brief approval before building a plan (M4) |
 | `POST /chat/stream` | Same agent, streamed as server-sent events: tool calls, tool results, tokens (M3) |
+
+## Evaluation (M5)
+
+```bash
+uv run python -m evals.agent_eval
+```
+
+Runs the agent on a LangSmith dataset and scores each answer. Results are in LangSmith → Datasets & Experiments.
