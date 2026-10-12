@@ -1,6 +1,9 @@
 import httpx
 from langchain.tools import tool
 
+from app.itinerary import chain
+from app.schemas import TripRequest
+
 # A tool is just a Python function. @tool reads its name, type hints and docstring
 # and turns them into a description the LLM sees, so the docstring is the
 # instruction that tells the model WHEN and HOW to use it.
@@ -43,3 +46,12 @@ def convert_currency(amount: float, from_currency: str, to_currency: str) -> dic
     )
     rate = res.json()["rates"][to_currency.upper()]
     return {"rate": rate, "converted": round(amount * rate, 2), "currency": to_currency.upper()}
+
+
+# M4: building a full itinerary is a big, slow LLM call, so it only runs after the traveler
+# approves the brief: HumanInTheLoopMiddleware (app/agent.py) pauses the agent before this tool.
+@tool(args_schema=TripRequest)
+async def create_itinerary(**trip) -> dict:
+    """Build a full day-by-day itinerary. Call it once you know the destination and number of days."""
+    itinerary = await chain.ainvoke(TripRequest(**trip).model_dump(mode="json"))
+    return itinerary.model_dump()

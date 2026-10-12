@@ -38,6 +38,8 @@ class Itinerary(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    message: str
+    message: str = ""
     # Messages with the same thread_id share one conversation (M3 memory).
     thread_id: str = "default"
+    # M4: the answer to a pending approval (the Approve button in a UI).
+    decision: Literal["approve"] | None = None
