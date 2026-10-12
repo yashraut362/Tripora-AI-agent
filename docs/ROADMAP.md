@@ -11,7 +11,7 @@ one concept at a time. Each milestone has a study note in [`docs/learn/`](learn/
 | 3 | Chat that remembers and streams | Checkpointers, thread IDs, streaming | Server-sent events (`EventSourceResponse`) | ✅ [notes](learn/m3-memory-and-streaming.md) |
 | 4 | Approve the trip brief: the agent pauses with what it understood, and builds the real itinerary only after you approve | Human in the loop: `HumanInTheLoopMiddleware` (uses `interrupt()`), resuming with `Command(resume=...)`; M1's chain becomes an agent tool | The same chat endpoints take a message or an approve decision | ✅ [notes](learn/m4-human-approval.md) |
 | 5 | Is the agent any good? | LangSmith Evaluation: datasets, evaluators, experiments | | ✅ [notes](learn/m5-evaluation.md) |
-| 6 | Deep trip planner with subagents | Deep Agents | | |
+| 6 | Deep planner for big multi-city trips: plans to-dos, sends each city to a researcher subagent, writes the plan to a file | Deep Agents: `create_deep_agent`, `write_todos`, subagents (`task`), virtual filesystem | `POST /deep-plan/stream` with progress events (todos, status, plan) | ✅ [notes](learn/m6-deep-agents.md) |
 | 7 | Agent runs code (budget math, charts) | LangSmith Sandboxes | | |
 | 8 | Ship it | LangSmith Deployment vs serving it yourself with FastAPI | Deployment trade-offs | |
 | 9 | No-code comparison | LangSmith Fleet | | |

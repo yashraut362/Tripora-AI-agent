@@ -6,11 +6,12 @@ load_dotenv()
 
 from fastapi import FastAPI  # noqa: E402
 
-from app import agent, itinerary  # noqa: E402
+from app import agent, deep_planner, itinerary  # noqa: E402
 
 app = FastAPI(title="Tripora Agent")
 app.include_router(itinerary.router)
 app.include_router(agent.router)
+app.include_router(deep_planner.router)
 
 
 @app.get("/health")

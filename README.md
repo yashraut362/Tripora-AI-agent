@@ -19,6 +19,7 @@ API docs: http://localhost:8001/docs
 | `POST /itinerary` | Day-by-day itinerary from trip details (M1) |
 | `POST /chat` | Travel assistant agent with tools (M2), per-`thread_id` memory (M3), trip-brief approval before building a plan (M4) |
 | `POST /chat/stream` | Same agent, streamed as server-sent events: tool calls, tool results, tokens (M3) |
+| `POST /deep-plan/stream` | Deep agent for multi-city trips: to-dos, city-researcher subagents, writes `/trip_plan.md` (M6) |
 
 ## Evaluation (M5)
 

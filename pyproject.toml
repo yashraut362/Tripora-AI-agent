@@ -5,6 +5,7 @@ description = "Tripora Agent - AI travel planning agent service (FastAPI)"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "deepagents>=0.7.24",
     "fastapi>=0.115",
     "langchain>=1.4",
     "langchain-openai>=1.7",
