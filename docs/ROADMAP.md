@@ -13,6 +13,7 @@ one concept at a time. Each milestone has a study note in [`docs/learn/`](learn/
 | 5 | Is the agent any good? | LangSmith Evaluation: datasets, evaluators, experiments | | ✅ [notes](learn/m5-evaluation.md) |
 | 6 | Deep planner for big multi-city trips: plans to-dos, sends each city to a researcher subagent, writes the plan to a file | Deep Agents: `create_deep_agent`, `write_todos`, subagents (`task`), virtual filesystem | `POST /deep-plan/stream` with progress events (todos, status, plan) | ✅ [notes](learn/m6-deep-agents.md) |
 | + | Guardrails: off-topic messages get a polite fixed reply | `@before_agent` middleware + small classifier model, `jump_to: end` | | ✅ [notes](learn/guardrails.md) |
+| + | Loop and hang protection: limits on model, tool and subagent calls, plus timeouts | `ModelCallLimitMiddleware`, `ToolCallLimitMiddleware`, `step_timeout` | `httpx` timeouts, friendly `error` events | ✅ [notes](learn/loop-limits.md) |
 | 7 | Agent runs code (budget math, charts) | LangSmith Sandboxes | | ⏭ skipped for now: Sandboxes aren't enabled on our LangSmith plan |
 | 8 | Ship it | LangSmith Deployment vs serving it yourself with FastAPI | Deployment trade-offs | |
 | 9 | No-code comparison | LangSmith Fleet | | |

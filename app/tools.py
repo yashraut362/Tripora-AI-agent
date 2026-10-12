@@ -13,7 +13,7 @@ from app.schemas import TripRequest
 def get_coordinates(place: str) -> dict:
     """Look up a city or place and return its latitude, longitude, country and timezone.
     Always include the country (e.g. "Goa, India"): a bare name can match a bigger place elsewhere."""
-    res = httpx.get("https://geocoding-api.open-meteo.com/v1/search", params={"name": place, "count": 1})
+    res = httpx.get("https://geocoding-api.open-meteo.com/v1/search", params={"name": place, "count": 1}, timeout=10)
     results = res.json().get("results")
     if not results:
         return {"error": f"No place found called {place!r}"}
@@ -34,6 +34,7 @@ def get_weather_forecast(latitude: float, longitude: float, days: int = 7) -> di
             "timezone": "auto",
             "forecast_days": days,
         },
+        timeout=10,
     )
     return res.json()["daily"]
 
@@ -44,6 +45,7 @@ def convert_currency(amount: float, from_currency: str, to_currency: str) -> dic
     res = httpx.get(
         "https://api.frankfurter.dev/v1/latest",
         params={"base": from_currency.upper(), "symbols": to_currency.upper()},
+        timeout=10,
     )
     rate = res.json()["rates"][to_currency.upper()]
     return {"rate": rate, "converted": round(amount * rate, 2), "currency": to_currency.upper()}

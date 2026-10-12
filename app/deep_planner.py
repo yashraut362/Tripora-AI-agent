@@ -4,7 +4,7 @@ from collections.abc import AsyncIterable
 from deepagents import create_deep_agent
 from fastapi import APIRouter
 from fastapi.sse import EventSourceResponse, ServerSentEvent
-from langchain.agents.middleware import TodoListMiddleware
+from langchain.agents.middleware import ModelCallLimitMiddleware, TodoListMiddleware, ToolCallLimitMiddleware
 from langgraph.checkpoint.memory import InMemorySaver
 
 from app.guardrails import travel_only
@@ -24,6 +24,8 @@ city_researcher = {
                      "Reply with a short summary (under 200 words): weather, must-see sights grouped by area, "
                      "local food, and getting around.",
     "tools": [get_coordinates, get_weather_forecast],
+    # Subagents run their own loop, so they get their own limit.
+    "middleware": [ModelCallLimitMiddleware(run_limit=6, exit_behavior="end")],
 }
 
 deep_planner = create_deep_agent(
@@ -38,9 +40,18 @@ deep_planner = create_deep_agent(
         "5. Reply with a 2-line summary. For changes later, edit /trip_plan.md instead of starting over."
     ),
     subagents=[city_researcher],
-    middleware=[travel_only, TodoListMiddleware()],
+    middleware=[
+        travel_only,
+        TodoListMiddleware(),
+        # Loop protection: at most 25 model calls and 6 subagent tasks per request.
+        ModelCallLimitMiddleware(run_limit=25, exit_behavior="end"),
+        ToolCallLimitMiddleware(tool_name="task", run_limit=6),
+    ],
     checkpointer=InMemorySaver(),
 )
+
+# Hang protection: one step over 180s raises TimeoutError (a step can include several subagents).
+deep_planner.step_timeout = 180
 
 router = APIRouter()
 
@@ -57,6 +68,9 @@ async def deep_plan_stream(req: ChatRequest) -> AsyncIterable[ServerSentEvent]:
             {"messages": [{"role": "user", "content": req.message}]}, config,
             stream_mode="updates", version="v2",
         ):
+            if chunk["data"].get("ModelCallLimitMiddleware.before_model"):
+                yield ServerSentEvent(event="error", data="This plan took too many steps, so I stopped. Try fewer cities.")
+                return
             if "model" not in chunk["data"]:
                 continue
             for call in chunk["data"]["model"]["messages"][-1].tool_calls:
@@ -72,6 +86,9 @@ async def deep_plan_stream(req: ChatRequest) -> AsyncIterable[ServerSentEvent]:
         if plan:
             yield ServerSentEvent(event="plan", data=plan["content"])
         yield ServerSentEvent(event="summary", data=state.values["messages"][-1].text)
+    except TimeoutError:
+        yield ServerSentEvent(event="error", data="This is taking too long, please try again")
+        raise
     except Exception:
         yield ServerSentEvent(event="error", data="Something went wrong, please try again")
         raise

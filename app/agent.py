@@ -4,7 +4,7 @@ from collections.abc import AsyncIterable
 from fastapi import APIRouter
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from langchain.agents import create_agent
-from langchain.agents.middleware import HumanInTheLoopMiddleware
+from langchain.agents.middleware import HumanInTheLoopMiddleware, ModelCallLimitMiddleware
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 
@@ -30,6 +30,8 @@ agent = create_agent(
     # runs (interrupt() underneath) until the traveler approves or rejects it.
     middleware=[
         travel_only,  # guardrail: off-topic messages get a fixed reply, the agent doesn't run
+        # Loop protection: at most 10 model calls per request, then stop cleanly.
+        ModelCallLimitMiddleware(run_limit=10, exit_behavior="end"),
         HumanInTheLoopMiddleware(interrupt_on={"create_itinerary": {"allowed_decisions": ["approve", "reject"]}})
     ],
     # M3 memory: after every step the agent's state (its message list) is saved here,
@@ -37,6 +39,9 @@ agent = create_agent(
     # InMemorySaver lives in RAM, so restarting the server forgets everything.
     checkpointer=InMemorySaver(),
 )
+
+# Hang protection: any single step (one model call or one round of tools) over 60s raises TimeoutError.
+agent.step_timeout = 60
 
 router = APIRouter()
 
@@ -113,10 +118,17 @@ async def chat_stream(req: ChatRequest) -> AsyncIterable[ServerSentEvent]:
                 # The guardrail blocked the message: its fixed reply isn't streamed as tokens.
                 yield ServerSentEvent(event="token", data=chunk["data"]["travel_only.before_agent"]["messages"][-1].text)
 
+            elif chunk["type"] == "updates" and chunk["data"].get("ModelCallLimitMiddleware.before_model"):
+                # The loop limit stopped the run: show a friendly message, not the internal one.
+                yield ServerSentEvent(event="error", data="This took too many steps, so I stopped. Try asking for less at once.")
+
         # M4: if the run paused for approval, send the trip brief for the approval card.
         state = await agent.aget_state(thread_config(req))
         if state.interrupts:
             yield ServerSentEvent(event="approval_required", data=state.interrupts[0].value["action_requests"][0]["args"])
+    except TimeoutError:
+        yield ServerSentEvent(event="error", data="This is taking too long, please try again")
+        raise
     except Exception:
         # The stream has already started (status 200 was sent), so an HTTP error code is
         # no longer possible. Errors have to be sent as an event too.
