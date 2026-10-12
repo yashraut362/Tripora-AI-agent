@@ -7,6 +7,7 @@ from fastapi.sse import EventSourceResponse, ServerSentEvent
 from langchain.agents.middleware import TodoListMiddleware
 from langgraph.checkpoint.memory import InMemorySaver
 
+from app.guardrails import travel_only
 from app.schemas import ChatRequest
 from app.tools import convert_currency, get_coordinates, get_weather_forecast
 
@@ -37,7 +38,7 @@ deep_planner = create_deep_agent(
         "5. Reply with a 2-line summary. For changes later, edit /trip_plan.md instead of starting over."
     ),
     subagents=[city_researcher],
-    middleware=[TodoListMiddleware()],
+    middleware=[travel_only, TodoListMiddleware()],
     checkpointer=InMemorySaver(),
 )
 

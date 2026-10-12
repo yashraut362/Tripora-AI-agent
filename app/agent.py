@@ -8,6 +8,7 @@ from langchain.agents.middleware import HumanInTheLoopMiddleware
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 
+from app.guardrails import travel_only
 from app.schemas import ChatRequest
 from app.tools import convert_currency, create_itinerary, get_coordinates, get_weather_forecast
 
@@ -28,6 +29,7 @@ agent = create_agent(
     # M4: after each model turn, if the model asked for create_itinerary, pause BEFORE the tool
     # runs (interrupt() underneath) until the traveler approves or rejects it.
     middleware=[
+        travel_only,  # guardrail: off-topic messages get a fixed reply, the agent doesn't run
         HumanInTheLoopMiddleware(interrupt_on={"create_itinerary": {"allowed_decisions": ["approve", "reject"]}})
     ],
     # M3 memory: after every step the agent's state (its message list) is saved here,
@@ -106,6 +108,10 @@ async def chat_stream(req: ChatRequest) -> AsyncIterable[ServerSentEvent]:
                 for call in chunk["data"]["model"]["messages"][-1].tool_calls:
                     status = TOOL_STATUS.get(call["name"], "Working on it…").format(**call["args"])
                     yield ServerSentEvent(event="status", data=status)
+
+            elif chunk["type"] == "updates" and chunk["data"].get("travel_only.before_agent"):
+                # The guardrail blocked the message: its fixed reply isn't streamed as tokens.
+                yield ServerSentEvent(event="token", data=chunk["data"]["travel_only.before_agent"]["messages"][-1].text)
 
         # M4: if the run paused for approval, send the trip brief for the approval card.
         state = await agent.aget_state(thread_config(req))
